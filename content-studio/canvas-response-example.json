@@ -1,0 +1,58 @@
+{
+  "refreshNow": false,
+  "taskAlias": "沪上校历",
+  "data": {
+    "date": "2026.08.13",
+    "phase": "暑假",
+    "primaryLabel": "距秋季开学",
+    "primaryValue": 19,
+    "secondaryLabel": "暑假第",
+    "secondaryValue": 44,
+    "progress": 71,
+    "detail": "暑假进度",
+    "nextEvent": "09.01 秋季开学"
+  },
+  "windowData": {
+    "default": [
+      {
+        "type": "div",
+        "props": {
+          "tw": "flex flex-col w-full h-full min-w-0 min-h-0 bg-white text-black gap-[5px]",
+          "children": [
+            {
+              "type": "span",
+              "props": {
+                "tw": "text-11-chillduansans font-bold",
+                "children": "沪上校历 · {{get inputData \"phase\" default=\"校历\"}}"
+              }
+            },
+            {
+              "type": "span",
+              "props": {
+                "tw": "text-52-chillduansans font-bold leading-none",
+                "children": "{{get inputData \"primaryValue\" default=\"--\"}}"
+              }
+            },
+            {
+              "type": "span",
+              "props": {
+                "tw": "text-9-chillduansans",
+                "children": "{{get inputData \"nextEvent\" default=\"\"}}"
+              }
+            }
+          ]
+        }
+      }
+    ]
+  },
+  "layoutFull": {
+    "tw": "p-[10px]"
+  },
+  "link": "https://quote0-school-calendar.chuxubank.chatgpt.site",
+  "border": 0,
+  "meta": {
+    "schemaVersion": 1,
+    "target": "quote_0_296x152",
+    "dataEndpoint": "https://quote0-school-calendar.chuxubank.chatgpt.site/api/calendar"
+  }
+}

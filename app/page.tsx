@@ -354,7 +354,7 @@ export default function Home() {
           </div>
 
           <div className="integration-footer">
-            <span><i aria-hidden="true" /> 接口无额外鉴权 · 托管访问待公开</span>
+            <span><i aria-hidden="true" /> API 公开在线 · 无需认证 · 6 小时缓存</span>
             <span>适配 Quote/0 · 296 × 152</span>
           </div>
         </section>

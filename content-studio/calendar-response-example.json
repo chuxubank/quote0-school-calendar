@@ -1,0 +1,42 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-08-13T02:22:25.296Z",
+  "region": {
+    "code": "CN-SH",
+    "name": "上海"
+  },
+  "audience": "primary_and_secondary_schools",
+  "date": "2026-08-13",
+  "timezone": "Asia/Shanghai",
+  "schoolYear": "2025学年",
+  "phase": {
+    "id": "summer-2026",
+    "name": "暑假",
+    "type": "vacation",
+    "start": "2026-07-01",
+    "end": "2026-08-31",
+    "weeks": null
+  },
+  "display": {
+    "primaryLabel": "距秋季开学",
+    "primaryValue": 19,
+    "primaryUnit": "天",
+    "secondaryLabel": "暑假第",
+    "secondaryValue": 44,
+    "elapsedDays": 44,
+    "remainingDays": 18,
+    "progressPercent": 71,
+    "teachingWeek": null
+  },
+  "nextEvent": {
+    "label": "秋季开学",
+    "date": "2026-09-01",
+    "daysAway": 19
+  },
+  "source": {
+    "name": "上海市教育委员会",
+    "document": "上海市中小学2026学年校历",
+    "url": "https://edu.sh.gov.cn/xxgk2_zdgz_jcjy_05/20260605/19ca2cb2e10a47fe86047bcc0bfdd0e8.html",
+    "note": "节假日与个别学校安排可能调整，请以学校最新通知为准。"
+  }
+}

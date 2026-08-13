@@ -1,100 +1,70 @@
-# vinext-starter
+# 沪上校历 · Quote/0
 
-A clean full-stack starter running on
-[vinext](https://github.com/cloudflare/vinext), with optional Cloudflare D1 and
-Drizzle support.
+面向上海地区中小学的 Quote/0 墨水屏校历：自动显示开学多久、距离学期结束还有多久，以及寒暑假和教学周进度。
 
-## Prerequisites
+[在线落地页](https://quote0-school-calendar.chuxubank.chatgpt.site/) · [校历 REST API](https://quote0-school-calendar.chuxubank.chatgpt.site/api/calendar) · [Quote/0 Canvas API](https://quote0-school-calendar.chuxubank.chatgpt.site/api/quote0/canvas)
 
-- Node.js `>=22.13.0`
+## 项目组成
 
-## Quick Start
+- `app/`：公开落地页与 API 路由；
+- `lib/school-calendar.ts`：共享的上海校历计算逻辑；
+- `quote0-school-cli/`：生成 296 × 152 黑白 PNG，并通过 Quote/0 Image API 推送到设备的 Python CLI；
+- `content-studio/`：Quote/0 Content Studio 申报材料、100 × 100 图标和响应示例；
+- `tests/`：落地页、REST API、Canvas API 与图标回归测试。
+
+## 本地运行落地页
+
+需要 Node.js 22.13 或更新版本：
 
 ```bash
 npm install
 npm run dev
-npm run build
 ```
 
-This starter does not use `wrangler.jsonc`.
+验证生产构建与接口：
 
-## Included Shape
-
-- edit site code under `app/`
-- `.openai/hosting.json` declares optional Sites D1 and R2 bindings
-- `vite.config.ts` simulates declared bindings for local development
-- `db/schema.ts` starts intentionally empty
-- `examples/d1/` contains an optional D1 example surface
-- `drizzle.config.ts` supports local migration generation when needed
-
-## Workspace Auth Headers
-
-Signed-in visitors receive both `oai-authenticated-user-id` and `oai-authenticated-user-email`. Private Sites require every visitor to sign in; public Sites may also have anonymous visitors, for whom neither header is present.
-
-The user ID is stable for the same user on the same Site and different across Sites. Email and name are intended for display or contact purposes.
-
-SIWC-authenticated workspace sites may also receive
-`oai-authenticated-user-full-name` when the user's SIWC profile has a non-empty
-`name` claim. The full-name value is percent-encoded UTF-8 and is accompanied by
-`oai-authenticated-user-full-name-encoding: percent-encoded-utf-8`.
-
-Treat the full name as optional and fall back to email when it is absent:
-
-```tsx
-import { headers } from "next/headers";
-
-export default async function Home() {
-  const requestHeaders = await headers();
-  const userId = requestHeaders.get("oai-authenticated-user-id");
-  const email = requestHeaders.get("oai-authenticated-user-email");
-  const encodedFullName = requestHeaders.get("oai-authenticated-user-full-name");
-  const fullName =
-    encodedFullName &&
-    requestHeaders.get("oai-authenticated-user-full-name-encoding") ===
-      "percent-encoded-utf-8"
-      ? decodeURIComponent(encodedFullName)
-      : null;
-
-  const displayName = fullName ?? email;
-  // ...
-}
+```bash
+npm test
 ```
 
-## Optional Dispatch-Owned ChatGPT Sign-In
+REST API 支持传入日期以复现状态：
 
-Import the ready-to-use helpers from `app/chatgpt-auth.ts` when the site needs
-optional or required ChatGPT sign-in:
+```text
+GET /api/calendar?date=2026-08-13
+GET /api/quote0/canvas?date=2026-08-13
+```
 
-- Use `getChatGPTUser()` for optional signed-in UI.
-- Use `requireChatGPTUser(returnTo)` for server-rendered pages that should send
-  anonymous visitors through Sign in with ChatGPT.
-- Use `chatGPTSignInPath(returnTo)` and `chatGPTSignOutPath(returnTo)` for
-  browser links or actions.
-- Pass a same-origin relative `returnTo` path for the destination after sign-in
-  or sign-out. The helper validates and safely encodes it.
-- Mark protected pages with `export const dynamic = "force-dynamic"` because
-  they depend on per-request identity headers.
+## Quote/0 本地推送
 
-Dispatch owns `/signin-with-chatgpt`, `/signout-with-chatgpt`, `/callback`, the
-OAuth cookies, and identity header injection. Do not implement app routes for
-those reserved paths. Routes that do not import and call the helper remain
-anonymous-compatible.
+CLI 需要 Python 3.11+ 与 `uv`：
 
-SIWC establishes identity only; it does not prove workspace membership. Use the
-Sites hosting platform's access policy controls for workspace-wide restrictions,
-or enforce explicit server-side membership or allowlist checks.
+```bash
+cd quote0-school-cli
+uv tool install .
+quote0-school doctor
+quote0-school render --output preview.png
+quote0-school push --dry-run
+quote0-school push
+```
 
-Use SIWC for account pages, user-specific dashboards, saved records, and write
-actions tied to the current ChatGPT user. Leave public content anonymous.
+推送前在 Dot. App 的 Content Studio 中添加 **Image API** 内容，并配置：
 
-## Useful Commands
+```bash
+export DOT_API_KEY='dot_app_...'
+export DOT_DEVICE_ID='ABCD1234ABCD'
+```
 
-- `npm run dev`: start local development
-- `npm run build`: verify the vinext build output
-- `npm test`: build the starter and verify its rendered loading skeleton
-- `npm run db:generate`: generate Drizzle migrations after schema changes
+API Key 只应保存在本机环境变量中，不要提交到仓库。
 
-## Learn More
+## 校历数据
 
-- [vinext Documentation](https://github.com/cloudflare/vinext)
-- [Drizzle D1 Guide](https://orm.drizzle.team/docs/get-started/d1-new)
+数据依据上海市教育委员会发布的上海市中小学校历。已收录 2025 学年与 2026 学年；法定节假日、个别学校安排或临时调整以学校最新通知为准。
+
+- [上海市中小学 2026 学年校历](https://edu.sh.gov.cn/xxgk2_zdgz_jcjy_05/20260605/19ca2cb2e10a47fe86047bcc0bfdd0e8.html)
+- [Quote/0 加入 Content Studio](https://dot.mindreset.tech/docs/service/studio/join-content-studio)
+- [Quote/0 Canvas API](https://dot.mindreset.tech/docs/service/open/canvas_api)
+- [Quote/0 Image API](https://dot.mindreset.tech/docs/service/open/image_api)
+
+## 状态
+
+项目已经具备公开 REST API、Canvas 布局与申报资料，目前处于 Quote/0 Content Studio **待官方审核**状态，尚不代表已经官方上架。
