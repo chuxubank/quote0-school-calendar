@@ -9,10 +9,7 @@ test("GitHub Pages build is static and uses the repository base path", async () 
   );
   assert.match(html, /沪上校历/);
   assert.match(html, /\/quote0-school-calendar\/_next\/static\//);
-  assert.match(
-    html,
-    /https:\/\/quote0-school-calendar\.chuxubank\.chatgpt\.site\/api\/calendar/,
-  );
+  assert.doesNotMatch(html, /chatgpt\.site/);
   await access(new URL("../dist/pages/.nojekyll", import.meta.url));
   await access(new URL("../dist/pages/_next/static", import.meta.url));
 });

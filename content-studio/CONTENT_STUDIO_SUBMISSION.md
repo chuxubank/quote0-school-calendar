@@ -1,6 +1,6 @@
 # 沪上校历 · Quote/0 Content Studio 申报资料
 
-> 状态：技术材料与公开接口已就绪，待 Quote/0 官方审核。本文档不是上架证明。
+> 状态：技术材料已就绪，Cloudflare Worker 域名待配置，之后提交 Quote/0 官方审核。本文档不是上架证明。
 
 ## 基本信息
 
@@ -14,16 +14,16 @@
 | 地区与语言 | 中国上海；简体中文（zh-CN） |
 | 内容类型 | 教育 / 日历 / 倒计时 |
 | 数据来源 | 上海市教育委员会公布的上海市中小学校历 |
-| 落地页 | https://quote0-school-calendar.chuxubank.chatgpt.site |
+| 落地页 | https://asahiart.github.io/quote0-school-calendar/ |
 | 开源代码 | https://github.com/AsahiArt/quote0-school-calendar |
-| 卡片图标 | https://quote0-school-calendar.chuxubank.chatgpt.site/content-studio-icon.png |
+| 卡片图标 | https://asahiart.github.io/quote0-school-calendar/content-studio-icon.png |
 | 品牌色 | 墨色 `#171A17`、纸色 `#F4F1E9`、荧光绿 `#D5FF37` |
 
 ## 接口
 
 ### 校历 REST API
 
-- URL：`https://quote0-school-calendar.chuxubank.chatgpt.site/api/calendar`
+- URL：`https://quote0-school-calendar-api.<workers-subdomain>.workers.dev/api/calendar`
 - 方法：`GET`
 - 鉴权：无
 - 可选参数：`date=YYYY-MM-DD`
@@ -35,7 +35,7 @@
 
 ### Quote/0 Canvas 布局
 
-- URL：`https://quote0-school-calendar.chuxubank.chatgpt.site/api/quote0/canvas`
+- URL：`https://quote0-school-calendar-api.<workers-subdomain>.workers.dev/api/quote0/canvas`
 - 方法：`GET`
 - 鉴权：无
 - 可选参数：`date=YYYY-MM-DD`
@@ -65,7 +65,8 @@
 ## 审核清单
 
 - [x] 100 × 100 透明 PNG 图标；
-- [x] 落地页与 API 已切换为公开访问；
+- [x] GitHub Pages 落地页已公开访问；
+- [ ] Cloudflare Worker API 已部署并替换本文占位域名；
 - [x] 无鉴权 REST API 与完整响应示例；
 - [x] Quote/0 Canvas 布局数据；
 - [x] 数据来源、刷新频率和免责声明；

@@ -6,7 +6,7 @@ import {
 } from "./school-calendar";
 
 export const DEFAULT_LANDING_URL =
-  "https://quote0-school-calendar.chuxubank.chatgpt.site";
+  "https://asahiart.github.io/quote0-school-calendar/";
 
 const SOURCE_URL =
   "https://edu.sh.gov.cn/xxgk2_zdgz_jcjy_05/20260605/19ca2cb2e10a47fe86047bcc0bfdd0e8.html";

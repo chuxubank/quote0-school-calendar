@@ -1,26 +1,24 @@
 # 沪上校历 · Quote/0
 
-面向上海地区中小学的 Quote/0 墨水屏校历：自动显示开学多久、距离学期结束还有多久，以及寒暑假和教学周进度。
+面向上海地区中小学的 Quote/0 墨水屏校历：显示开学多久、距离学期结束还有多久，以及寒暑假和教学周进度。
 
-[在线落地页](https://quote0-school-calendar.chuxubank.chatgpt.site/) · [校历 REST API](https://quote0-school-calendar.chuxubank.chatgpt.site/api/calendar) · [Quote/0 Canvas API](https://quote0-school-calendar.chuxubank.chatgpt.site/api/quote0/canvas)
+[GitHub Pages 落地页](https://asahiart.github.io/quote0-school-calendar/) · [开源仓库](https://github.com/AsahiArt/quote0-school-calendar)
 
-同一份代码支持三种部署目标：
+项目只生成 Quote/0 Canvas 结构化布局，不再维护 Image API、Python CLI 或 ChatGPT Site 部署。
 
-- **GitHub Pages**：静态落地页，浏览器端自动计算当天进度；
-- **Cloudflare Worker**：独立提供 REST、Canvas 与健康检查 API；
-- **Docker**：在任意支持容器的平台自托管完整站点和 API。
+## 架构
 
-## 项目组成
+```text
+lib/school-calendar.ts  上海校历数据和日期计算（唯一实现）
+lib/quote0-api.ts       REST 响应和 Quote/0 Canvas 负载（唯一实现）
+app/                    GitHub Pages 落地页；Docker 同时复用其中的 API 路由
+worker/api.ts           Cloudflare Worker 的轻量部署适配器
+content-studio/         Quote/0 Content Studio 申报材料
+```
 
-- `app/`：公开落地页与 API 路由；
-- `lib/school-calendar.ts`：共享的上海校历计算逻辑；
-- `quote0-school-cli/`：支持 Quote/0 Image API 与 Canvas API 的 Python CLI，可生成 296 × 152 预览、发现内容任务并推送设备；
-- `content-studio/`：Quote/0 Content Studio 申报材料、100 × 100 图标和响应示例；
-- `worker/api.ts`：无状态的独立 Worker API 入口；
-- `.github/workflows/`：Pages、Worker 与 GHCR 自动发布；
-- `tests/`：落地页、REST API、Canvas API 与图标回归测试。
+页面、Docker 和 Worker 都调用 `lib/` 中的共享模块，不各自复制校历数据或 Canvas 模板。设备发现、鉴权和推送交由 [MindReset 官方 Dot Skill](https://github.com/MindReset/dot_skill) 或官方 OpenAPI 工具处理，不在本仓库重复实现。
 
-## 本地运行落地页
+## 本地开发
 
 需要 Node.js 22.13 或更新版本：
 
@@ -29,50 +27,14 @@ npm install
 npm run dev
 ```
 
-验证生产构建与接口：
+验证站点、API 与部署产物：
 
 ```bash
 npm test
 npm run test:deploy
 ```
 
-REST API 支持传入日期以复现状态：
-
-```text
-GET /api/calendar?date=2026-08-13
-GET /api/quote0/canvas?date=2026-08-13
-GET /api/health
-```
-
-## GitHub Pages + Worker
-
-合并到 `main` 后，`deploy-pages.yml` 会构建 `dist/pages` 并发布到：
-
-```text
-https://asahiart.github.io/quote0-school-calendar/
-```
-
-Pages 默认连接当前公开 API。独立 Worker 部署完成后，在 GitHub 仓库变量中设置：
-
-```text
-QUOTE0_API_BASE_URL=https://quote0-school-calendar-api.<你的 workers.dev 子域>.workers.dev
-```
-
-Worker 自动部署需要两个 GitHub Actions secrets：
-
-```text
-CLOUDFLARE_API_TOKEN
-CLOUDFLARE_ACCOUNT_ID
-```
-
-也可以在本机验证或部署：
-
-```bash
-npm run build:worker
-npx wrangler deploy --config wrangler.api.jsonc
-```
-
-Worker 路由：
+提供的只读路由：
 
 ```text
 GET /api/health
@@ -80,58 +42,51 @@ GET /api/calendar?date=YYYY-MM-DD
 GET /api/quote0/canvas?date=YYYY-MM-DD
 ```
 
+## GitHub Pages + Cloudflare Worker
+
+合并到 `main` 后，`deploy-pages.yml` 会发布静态落地页。页面中的倒计时在浏览器本地计算，不依赖后端。
+
+要启用页面中的 REST 和 Canvas 链接，先部署 Worker，再设置 GitHub 仓库变量：
+
+```text
+QUOTE0_API_BASE_URL=https://quote0-school-calendar-api.<workers-subdomain>.workers.dev
+```
+
+自动部署 Worker 需要以下 GitHub Actions secrets：
+
+```text
+CLOUDFLARE_API_TOKEN
+CLOUDFLARE_ACCOUNT_ID
+```
+
+本机也可以验证或部署：
+
+```bash
+npm run build:worker
+npx wrangler deploy --config wrangler.api.jsonc
+```
+
 ## Docker
 
-本地构建并启动完整站点：
+Docker 提供完整落地页和同源 API：
 
 ```bash
 docker compose up --build
 ```
 
-随后访问 <http://localhost:3000>。健康检查位于
-<http://localhost:3000/api/health>。
-
-每次合并到 `main`，GitHub Actions 会发布容器镜像到：
+随后访问 <http://localhost:3000>。发布镜像为：
 
 ```text
 ghcr.io/asahiart/quote0-school-calendar:latest
 ```
 
-服务器可直接运行：
+## Quote/0 使用方式
 
-```bash
-docker run -d \
-  --name quote0-school-calendar \
-  --restart unless-stopped \
-  -p 3000:3000 \
-  ghcr.io/asahiart/quote0-school-calendar:latest
-```
+1. 在 Dot. App 的 Content Studio 中把 **Canvas API** 加入设备内容；
+2. 从已部署的 `/api/quote0/canvas` 获取布局负载；
+3. 使用全局安装的 MindReset 官方 Dot Skill 或官方 OpenAPI 将负载发送到设备。
 
-## Quote/0 本地推送
-
-CLI 需要 Python 3.11+ 与 `uv`：
-
-```bash
-cd quote0-school-cli
-uv tool install .
-quote0-school doctor
-quote0-school render --output preview.png
-quote0-school push --dry-run
-quote0-school push
-quote0-school canvas-preview --output canvas-preview.png
-quote0-school tasks --type canvas
-quote0-school push-canvas --dry-run --preview canvas-preview.png
-quote0-school push-canvas
-```
-
-推送前在 Dot. App 的 Content Studio 中添加对应的 **Image API** 或 **Canvas API** 内容，并配置：
-
-```bash
-export DOT_API_KEY='dot_app_...'
-export DOT_DEVICE_ID='ABCD1234ABCD'
-```
-
-API Key 只应保存在本机环境变量中，不要提交到仓库。
+本仓库不读取或保存 `DOT_API_KEY`、设备序列号等凭据。
 
 ## 校历数据
 
@@ -140,8 +95,7 @@ API Key 只应保存在本机环境变量中，不要提交到仓库。
 - [上海市中小学 2026 学年校历](https://edu.sh.gov.cn/xxgk2_zdgz_jcjy_05/20260605/19ca2cb2e10a47fe86047bcc0bfdd0e8.html)
 - [Quote/0 加入 Content Studio](https://dot.mindreset.tech/docs/service/studio/join-content-studio)
 - [Quote/0 Canvas API](https://dot.mindreset.tech/docs/service/open/canvas_api)
-- [Quote/0 Image API](https://dot.mindreset.tech/docs/service/open/image_api)
 
 ## 状态
 
-项目已经具备公开 REST API、Canvas 布局与申报资料，目前处于 Quote/0 Content Studio **待官方审核**状态，尚不代表已经官方上架。
+GitHub Pages 落地页和 Canvas/REST 实现已经就绪。Cloudflare Worker 域名配置完成后，即可更新申报材料并提交 Quote/0 Content Studio 审核。

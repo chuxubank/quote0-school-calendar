@@ -2,11 +2,8 @@
 
 import { useEffect, useMemo, useState } from "react";
 import {
-  diffDays,
-  findActivePeriod,
+  calendarSnapshot,
   formatShortDate,
-  inclusiveDays,
-  periods,
   shanghaiDateKey,
   termCards,
   weekdayLabel,
@@ -79,28 +76,9 @@ export default function Home() {
     return () => window.clearInterval(timer);
   }, []);
 
-  const current = useMemo(() => findActivePeriod(todayKey), [todayKey]);
-  const totalDays = inclusiveDays(current.start, current.end);
-  const elapsedDays = Math.min(
-    totalDays,
-    Math.max(0, inclusiveDays(current.start, todayKey)),
-  );
-  const remainingDays = Math.max(0, diffDays(todayKey, current.end));
-  const progress = Math.min(100, Math.max(0, (elapsedDays / totalDays) * 100));
-  const nextPeriod = periods[periods.indexOf(current) + 1];
-  const mainNumber =
-    current.type === "term"
-      ? elapsedDays
-      : nextPeriod
-        ? diffDays(todayKey, nextPeriod.start)
-        : remainingDays;
-  const mainLabel =
-    current.type === "term"
-      ? "开学第"
-      : nextPeriod
-        ? `距离${current.nextLabel ?? "下一阶段"}`
-        : "假期还剩";
-  const mainUnit = current.type === "term" ? "天" : "天";
+  const snapshot = useMemo(() => calendarSnapshot(todayKey), [todayKey]);
+  const { display, phase } = snapshot;
+  const progress = display.progressPercent;
   const activeTerm = termCards.find((term) => term.id === selectedTerm) ?? termCards[0];
 
   return (
@@ -125,22 +103,22 @@ export default function Home() {
         <section className="hero" aria-labelledby="hero-title">
           <div className="hero-copy">
             <div className="status-line">
-              <span>{current.eyebrow}</span>
+              <span>{snapshot.schoolYear}</span>
               <span className="divider" />
-              <span>{current.name}进行中</span>
+              <span>{phase.name}进行中</span>
             </div>
             <p className="today-line">
               {formatShortDate(todayKey)} · {weekdayLabel(todayKey)}
             </p>
             <h1 id="hero-title">
-              {mainLabel}
-              <span className="hero-number">{mainNumber}</span>
-              {mainUnit}
+              {display.primaryLabel}
+              <span className="hero-number">{display.primaryValue}</span>
+              天
             </h1>
             <p className="hero-note">
-              {current.type === "term"
-                ? `本学期已进行 ${elapsedDays} 天，距离学期结束还有 ${remainingDays} 天。`
-                : `${current.name}第 ${elapsedDays} 天，已经走过 ${Math.round(progress)}%。`}
+              {phase.type === "term"
+                ? `本学期已进行 ${display.elapsedDays} 天，距离学期结束还有 ${display.remainingDays} 天。`
+                : `${phase.name}第 ${display.elapsedDays} 天，已经走过 ${progress}%。`}
             </p>
 
             <div className="hero-actions">
@@ -155,15 +133,15 @@ export default function Home() {
 
             <div className="progress-block">
               <div className="progress-labels">
-                <span>{formatShortDate(current.start)}</span>
-                <strong>{Math.round(progress)}%</strong>
-                <span>{formatShortDate(current.end)}</span>
+                <span>{formatShortDate(phase.start)}</span>
+                <strong>{progress}%</strong>
+                <span>{formatShortDate(phase.end)}</span>
               </div>
               <div
                 className="progress-track"
                 role="progressbar"
-                aria-label={`${current.name}进度`}
-                aria-valuenow={Math.round(progress)}
+                aria-label={`${phase.name}进度`}
+                aria-valuenow={progress}
                 aria-valuemin={0}
                 aria-valuemax={100}
               >
@@ -178,13 +156,13 @@ export default function Home() {
               <span>{String(new Date().getFullYear()).slice(-2)}</span>
             </div>
             <div className="ink-main">
-              <span className="ink-label">{mainLabel}</span>
-              <strong>{mainNumber}</strong>
+              <span className="ink-label">{display.primaryLabel}</span>
+              <strong>{display.primaryValue}</strong>
               <span className="ink-unit">DAYS</span>
             </div>
             <div className="ink-footer">
-              <span>{current.name}</span>
-              <span>{Math.round(progress)}% · 上海</span>
+              <span>{phase.name}</span>
+              <span>{progress}% · 上海</span>
             </div>
           </aside>
         </section>
@@ -192,19 +170,21 @@ export default function Home() {
         <section className="stat-strip" aria-label="校历关键数据">
           <div>
             <span>当前阶段</span>
-            <strong>{current.name}</strong>
+            <strong>{phase.name}</strong>
           </div>
           <div>
-            <span>{current.type === "term" ? "当前教学周" : "假期进度"}</span>
+            <span>{phase.type === "term" ? "当前教学周" : "假期进度"}</span>
             <strong>
-              {current.type === "term"
-                ? `第 ${Math.min(current.weeks ?? 1, Math.ceil(elapsedDays / 7))} 周`
-                : `${Math.round(progress)}%`}
+              {phase.type === "term"
+                ? `第 ${display.teachingWeek} 周`
+                : `${progress}%`}
             </strong>
           </div>
           <div>
-            <span>{nextPeriod ? "下一节点" : "本阶段结束"}</span>
-            <strong>{nextPeriod ? formatShortDate(nextPeriod.start) : formatShortDate(current.end)}</strong>
+            <span>{snapshot.nextEvent ? "下一节点" : "本阶段结束"}</span>
+            <strong>
+              {formatShortDate(snapshot.nextEvent?.date ?? phase.end)}
+            </strong>
           </div>
           <div>
             <span>数据范围</span>
@@ -285,35 +265,35 @@ export default function Home() {
               沪上校历为 Quote/0 原生墨水屏设计。每天自动计算上海中小学当前所处阶段，以清晰的黑白版式显示开学天数、学期余额、教学周和寒暑假进度。
             </p>
             <div className="plugin-tags" aria-label="插件特性">
-              <span>1-bit 黑白</span>
-              <span>官方 Image API</span>
-              <span>Canvas API</span>
+              <span>296 × 152</span>
+              <span>官方 Canvas API</span>
+              <span>结构化布局</span>
               <span>上海时间</span>
             </div>
           </div>
 
           <div className="install-card">
             <div className="install-heading">
-              <span>个人版安装与推送</span>
+              <span>Canvas 接入与推送</span>
               <small>3 STEPS</small>
             </div>
             <ol>
               <li>
                 <span>01</span>
-                <p><strong>添加 Image API</strong><small>在 Dot. App 的 Content Studio 中，将 Image API 加入设备内容。</small></p>
+                <p><strong>添加 Canvas API</strong><small>在 Dot. App 的 Content Studio 中，将 Canvas API 加入设备内容。</small></p>
               </li>
               <li>
                 <span>02</span>
-                <p><strong>配置设备凭据</strong><small>设置 DOT_API_KEY 与 DOT_DEVICE_ID 环境变量，密钥只保存在本机。</small></p>
+                <p><strong>安装官方 Dot Skill</strong><small>使用 MindReset 官方设备 skill，并在本机配置 DOT_API_KEY。</small></p>
               </li>
               <li>
                 <span>03</span>
-                <p><strong>推送到墨水屏</strong><code>quote0-school push</code></p>
+                <p><strong>发送校历布局</strong><code>GET /api/quote0/canvas</code></p>
               </li>
             </ol>
             <div className="install-footer">
-              <span>支持本地预览：quote0-school render</span>
-              <a href="https://dot.mindreset.tech/docs/service/open/get_api" target="_blank" rel="noreferrer">获取 API Key ↗</a>
+              <span>设备操作交由 MindReset 官方工具</span>
+              <a href="https://github.com/MindReset/dot_skill" target="_blank" rel="noreferrer">查看 Dot Skill ↗</a>
             </div>
           </div>
         </section>
@@ -360,7 +340,7 @@ export default function Home() {
           </div>
 
           <div className="integration-footer">
-            <span><i aria-hidden="true" /> API 公开在线 · 无需认证 · 6 小时缓存</span>
+            <span><i aria-hidden="true" /> API 可独立部署 · 无需认证 · 6 小时缓存</span>
             <span>适配 Quote/0 · 296 × 152</span>
           </div>
         </section>
