@@ -15,7 +15,7 @@
 | 内容类型 | 教育 / 日历 / 倒计时 |
 | 数据来源 | 上海市教育委员会公布的上海市中小学校历 |
 | 落地页 | https://quote0-school-calendar.chuxubank.chatgpt.site |
-| 开源代码 | https://github.com/chuxubank/quote0-school-calendar |
+| 开源代码 | https://github.com/AsahiArt/quote0-school-calendar |
 | 卡片图标 | https://quote0-school-calendar.chuxubank.chatgpt.site/content-studio-icon.png |
 | 品牌色 | 墨色 `#171A17`、纸色 `#F4F1E9`、荧光绿 `#D5FF37` |
 

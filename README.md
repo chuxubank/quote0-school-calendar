@@ -49,7 +49,7 @@ GET /api/health
 合并到 `main` 后，`deploy-pages.yml` 会构建 `dist/pages` 并发布到：
 
 ```text
-https://chuxubank.github.io/quote0-school-calendar/
+https://asahiart.github.io/quote0-school-calendar/
 ```
 
 Pages 默认连接当前公开 API。独立 Worker 部署完成后，在 GitHub 仓库变量中设置：
@@ -94,7 +94,7 @@ docker compose up --build
 每次合并到 `main`，GitHub Actions 会发布容器镜像到：
 
 ```text
-ghcr.io/chuxubank/quote0-school-calendar:latest
+ghcr.io/asahiart/quote0-school-calendar:latest
 ```
 
 服务器可直接运行：
@@ -104,7 +104,7 @@ docker run -d \
   --name quote0-school-calendar \
   --restart unless-stopped \
   -p 3000:3000 \
-  ghcr.io/chuxubank/quote0-school-calendar:latest
+  ghcr.io/asahiart/quote0-school-calendar:latest
 ```
 
 ## Quote/0 本地推送

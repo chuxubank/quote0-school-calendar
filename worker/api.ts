@@ -37,7 +37,7 @@ export default {
       return canvasApi(request, {
         landingUrl:
           env.LANDING_URL ??
-          "https://chuxubank.github.io/quote0-school-calendar/",
+          "https://asahiart.github.io/quote0-school-calendar/",
         apiBaseUrl: url.origin,
       });
     }
