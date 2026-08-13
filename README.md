@@ -4,12 +4,20 @@
 
 [在线落地页](https://quote0-school-calendar.chuxubank.chatgpt.site/) · [校历 REST API](https://quote0-school-calendar.chuxubank.chatgpt.site/api/calendar) · [Quote/0 Canvas API](https://quote0-school-calendar.chuxubank.chatgpt.site/api/quote0/canvas)
 
+同一份代码支持三种部署目标：
+
+- **GitHub Pages**：静态落地页，浏览器端自动计算当天进度；
+- **Cloudflare Worker**：独立提供 REST、Canvas 与健康检查 API；
+- **Docker**：在任意支持容器的平台自托管完整站点和 API。
+
 ## 项目组成
 
 - `app/`：公开落地页与 API 路由；
 - `lib/school-calendar.ts`：共享的上海校历计算逻辑；
 - `quote0-school-cli/`：生成 296 × 152 黑白 PNG，并通过 Quote/0 Image API 推送到设备的 Python CLI；
 - `content-studio/`：Quote/0 Content Studio 申报材料、100 × 100 图标和响应示例；
+- `worker/api.ts`：无状态的独立 Worker API 入口；
+- `.github/workflows/`：Pages、Worker 与 GHCR 自动发布；
 - `tests/`：落地页、REST API、Canvas API 与图标回归测试。
 
 ## 本地运行落地页
@@ -25,6 +33,7 @@ npm run dev
 
 ```bash
 npm test
+npm run test:deploy
 ```
 
 REST API 支持传入日期以复现状态：
@@ -32,6 +41,70 @@ REST API 支持传入日期以复现状态：
 ```text
 GET /api/calendar?date=2026-08-13
 GET /api/quote0/canvas?date=2026-08-13
+GET /api/health
+```
+
+## GitHub Pages + Worker
+
+合并到 `main` 后，`deploy-pages.yml` 会构建 `dist/pages` 并发布到：
+
+```text
+https://chuxubank.github.io/quote0-school-calendar/
+```
+
+Pages 默认连接当前公开 API。独立 Worker 部署完成后，在 GitHub 仓库变量中设置：
+
+```text
+QUOTE0_API_BASE_URL=https://quote0-school-calendar-api.<你的 workers.dev 子域>.workers.dev
+```
+
+Worker 自动部署需要两个 GitHub Actions secrets：
+
+```text
+CLOUDFLARE_API_TOKEN
+CLOUDFLARE_ACCOUNT_ID
+```
+
+也可以在本机验证或部署：
+
+```bash
+npm run build:worker
+npx wrangler deploy --config wrangler.api.jsonc
+```
+
+Worker 路由：
+
+```text
+GET /api/health
+GET /api/calendar?date=YYYY-MM-DD
+GET /api/quote0/canvas?date=YYYY-MM-DD
+```
+
+## Docker
+
+本地构建并启动完整站点：
+
+```bash
+docker compose up --build
+```
+
+随后访问 <http://localhost:3000>。健康检查位于
+<http://localhost:3000/api/health>。
+
+每次合并到 `main`，GitHub Actions 会发布容器镜像到：
+
+```text
+ghcr.io/chuxubank/quote0-school-calendar:latest
+```
+
+服务器可直接运行：
+
+```bash
+docker run -d \
+  --name quote0-school-calendar \
+  --restart unless-stopped \
+  -p 3000:3000 \
+  ghcr.io/chuxubank/quote0-school-calendar:latest
 ```
 
 ## Quote/0 本地推送

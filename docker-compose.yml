@@ -1,0 +1,14 @@
+services:
+  quote0-school-calendar:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: ghcr.io/chuxubank/quote0-school-calendar:latest
+    ports:
+      - "3000:3000"
+    environment:
+      NODE_ENV: production
+      HOST: 0.0.0.0
+      PORT: 3000
+      NEXT_PUBLIC_LANDING_URL: ${PUBLIC_URL:-http://localhost:3000}
+    restart: unless-stopped
