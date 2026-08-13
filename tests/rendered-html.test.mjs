@@ -70,6 +70,16 @@ test("calendar API rejects impossible dates", async () => {
   assert.equal(body.error.code, "invalid_date");
 });
 
+test("health endpoint reports a stateless service", async () => {
+  const response = await request("/api/health", "application/json");
+  assert.equal(response.status, 200);
+  assert.match(response.headers.get("cache-control") ?? "", /no-store/);
+  const body = await response.json();
+  assert.equal(body.ok, true);
+  assert.equal(body.service, "quote0-school-calendar");
+  assert.equal(body.timezone, "Asia/Shanghai");
+});
+
 test("Content Studio icon is a transparent 100 by 100 PNG", async () => {
   const png = await readFile(new URL("../public/content-studio-icon.png", import.meta.url));
   assert.deepEqual([...png.subarray(0, 8)], [137, 80, 78, 71, 13, 10, 26, 10]);

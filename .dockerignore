@@ -1,0 +1,14 @@
+.git
+.github
+.next
+.vinext
+.wrangler
+dist
+node_modules
+outputs
+work
+quote0-school-cli/.venv
+quote0-school-cli/**/__pycache__
+*.log
+.env*
+!quote0-school-cli/.env.example

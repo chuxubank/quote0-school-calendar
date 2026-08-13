@@ -12,6 +12,12 @@ import {
   weekdayLabel,
 } from "../lib/school-calendar";
 
+const API_BASE_URL = (process.env.NEXT_PUBLIC_API_BASE_URL ?? "").replace(/\/$/, "");
+
+function apiHref(path: string) {
+  return `${API_BASE_URL}${path}`;
+}
+
 function Calendar({ todayKey }: { todayKey: string }) {
   const [year, month, today] = todayKey.split("-").map(Number);
   const firstDay = new Date(Date.UTC(year, month - 1, 1)).getUTCDay();
@@ -329,13 +335,13 @@ export default function Home() {
           </p>
 
           <div className="endpoint-grid">
-            <a href="/api/calendar" target="_blank" rel="noreferrer">
+            <a href={apiHref("/api/calendar")} target="_blank" rel="noreferrer">
               <span>01 · REST DATA</span>
               <strong>校历数据 API</strong>
               <code>GET /api/calendar</code>
               <small>当前阶段、倒计时、教学周、进度与下一节点</small>
             </a>
-            <a href="/api/quote0/canvas" target="_blank" rel="noreferrer">
+            <a href={apiHref("/api/quote0/canvas")} target="_blank" rel="noreferrer">
               <span>02 · CANVAS</span>
               <strong>Quote/0 布局</strong>
               <code>GET /api/quote0/canvas</code>
