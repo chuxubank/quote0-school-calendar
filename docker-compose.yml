@@ -3,7 +3,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    image: ghcr.io/chuxubank/quote0-school-calendar:latest
+    image: ghcr.io/asahiart/quote0-school-calendar:latest
     ports:
       - "3000:3000"
     environment:

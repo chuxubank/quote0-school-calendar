@@ -48,11 +48,11 @@
   "layoutFull": {
     "tw": "p-[10px]"
   },
-  "link": "https://quote0-school-calendar.chuxubank.chatgpt.site",
+  "link": "https://asahiart.github.io/quote0-school-calendar/",
   "border": 0,
   "meta": {
     "schemaVersion": 1,
     "target": "quote_0_296x152",
-    "dataEndpoint": "https://quote0-school-calendar.chuxubank.chatgpt.site/api/calendar"
+    "dataEndpoint": "https://quote0-school-calendar-api.<workers-subdomain>.workers.dev/api/calendar"
   }
 }

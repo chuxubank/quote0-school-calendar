@@ -5,19 +5,10 @@ import test from "node:test";
 async function request(path = "/", accept = "text/html") {
   const workerUrl = new URL("../dist/server/index.js", import.meta.url);
   workerUrl.searchParams.set("test", `${process.pid}-${Date.now()}-${Math.random()}`);
-  const { default: worker } = await import(workerUrl.href);
+  const { default: handler } = await import(workerUrl.href);
 
-  return worker.fetch(
+  return handler(
     new Request(`http://localhost${path}`, { headers: { accept } }),
-    {
-      ASSETS: {
-        fetch: async () => new Response("Not found", { status: 404 }),
-      },
-    },
-    {
-      waitUntil() {},
-      passThroughOnException() {},
-    },
   );
 }
 

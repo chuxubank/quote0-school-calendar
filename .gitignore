@@ -38,10 +38,3 @@ yarn-error.log*
 /.wrangler/
 /outputs/
 /work/
-
-# Local Python environments and generated previews
-**/.venv/
-**/__pycache__/
-**/*.py[cod]
-quote0-school-cli/preview.png
-!quote0-school-cli/.env.example

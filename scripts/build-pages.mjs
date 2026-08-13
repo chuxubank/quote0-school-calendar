@@ -8,18 +8,9 @@ const outputDirectory = path.join(root, "dist", "pages");
 const workerUrl = pathToFileURL(path.join(root, "dist", "server", "index.js"));
 workerUrl.searchParams.set("pages-build", String(Date.now()));
 
-const { default: worker } = await import(workerUrl.href);
-const response = await worker.fetch(
+const { default: handler } = await import(workerUrl.href);
+const response = await handler(
   new Request("http://localhost/", { headers: { accept: "text/html" } }),
-  {
-    ASSETS: {
-      fetch: async () => new Response("Not found", { status: 404 }),
-    },
-  },
-  {
-    waitUntil() {},
-    passThroughOnException() {},
-  },
 );
 
 if (!response.ok) {
