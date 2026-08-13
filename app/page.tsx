@@ -1,113 +1,16 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-
-type SchoolPeriod = {
-  id: string;
-  name: string;
-  eyebrow: string;
-  start: string;
-  end: string;
-  weeks?: number;
-  type: "term" | "vacation";
-  nextLabel?: string;
-};
-
-const DAY = 86_400_000;
-
-const periods: SchoolPeriod[] = [
-  {
-    id: "summer-2026",
-    name: "暑假",
-    eyebrow: "2025 学年",
-    start: "2026-07-01",
-    end: "2026-08-31",
-    type: "vacation",
-    nextLabel: "秋季开学",
-  },
-  {
-    id: "term-1",
-    name: "第一学期",
-    eyebrow: "2026 学年",
-    start: "2026-09-01",
-    end: "2027-01-22",
-    weeks: 21,
-    type: "term",
-  },
-  {
-    id: "winter-2027",
-    name: "寒假",
-    eyebrow: "2026 学年",
-    start: "2027-01-23",
-    end: "2027-02-21",
-    type: "vacation",
-    nextLabel: "春季开学",
-  },
-  {
-    id: "term-2",
-    name: "第二学期",
-    eyebrow: "2026 学年",
-    start: "2027-02-22",
-    end: "2027-06-30",
-    weeks: 19,
-    type: "term",
-  },
-  {
-    id: "summer-2027",
-    name: "暑假",
-    eyebrow: "2026 学年",
-    start: "2027-07-01",
-    end: "2027-08-31",
-    type: "vacation",
-  },
-];
-
-const termCards = periods.filter((period) => period.type === "term");
-
-function dateFromKey(key: string) {
-  return new Date(`${key}T00:00:00+08:00`);
-}
-
-function shanghaiDateKey(date = new Date()) {
-  const parts = new Intl.DateTimeFormat("zh-CN", {
-    timeZone: "Asia/Shanghai",
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-  }).formatToParts(date);
-
-  const value = (type: string) =>
-    parts.find((part) => part.type === type)?.value ?? "";
-  return `${value("year")}-${value("month")}-${value("day")}`;
-}
-
-function diffDays(from: string, to: string) {
-  return Math.round((dateFromKey(to).getTime() - dateFromKey(from).getTime()) / DAY);
-}
-
-function inclusiveDays(from: string, to: string) {
-  return diffDays(from, to) + 1;
-}
-
-function formatShortDate(key: string) {
-  const [year, month, day] = key.split("-").map(Number);
-  return `${year}.${String(month).padStart(2, "0")}.${String(day).padStart(2, "0")}`;
-}
-
-function weekdayLabel(key: string) {
-  return new Intl.DateTimeFormat("zh-CN", {
-    timeZone: "Asia/Shanghai",
-    weekday: "long",
-  }).format(dateFromKey(key));
-}
-
-function findActivePeriod(today: string) {
-  return (
-    periods.find((period) => today >= period.start && today <= period.end) ??
-    periods.find((period) => today < period.start) ??
-    periods[periods.length - 1]
-  );
-}
+import {
+  diffDays,
+  findActivePeriod,
+  formatShortDate,
+  inclusiveDays,
+  periods,
+  shanghaiDateKey,
+  termCards,
+  weekdayLabel,
+} from "../lib/school-calendar";
 
 function Calendar({ todayKey }: { todayKey: string }) {
   const [year, month, today] = todayKey.split("-").map(Number);
@@ -238,11 +141,9 @@ export default function Home() {
               <a className="primary-action" href="#install">查看插件安装</a>
               <a
                 className="secondary-action"
-                href="https://dot.mindreset.tech/docs/service/open/image_api"
-                target="_blank"
-                rel="noreferrer"
+                href="#content-studio"
               >
-                Quote/0 Image API ↗
+                Content Studio 接入
               </a>
             </div>
 
@@ -380,14 +281,14 @@ export default function Home() {
             <div className="plugin-tags" aria-label="插件特性">
               <span>1-bit 黑白</span>
               <span>官方 Image API</span>
+              <span>Canvas API</span>
               <span>上海时间</span>
-              <span>本地生成</span>
             </div>
           </div>
 
           <div className="install-card">
             <div className="install-heading">
-              <span>安装与推送</span>
+              <span>个人版安装与推送</span>
               <small>3 STEPS</small>
             </div>
             <ol>
@@ -408,6 +309,53 @@ export default function Home() {
               <span>支持本地预览：quote0-school render</span>
               <a href="https://dot.mindreset.tech/docs/service/open/get_api" target="_blank" rel="noreferrer">获取 API Key ↗</a>
             </div>
+          </div>
+        </section>
+
+        <section
+          className="integration-section"
+          id="content-studio"
+          aria-labelledby="integration-title"
+        >
+          <div className="integration-heading">
+            <div>
+              <p className="section-kicker">CONTENT STUDIO INTEGRATION</p>
+              <h2 id="integration-title">官方接入所需接口，已经就绪。</h2>
+            </div>
+            <span className="review-chip">待官方审核</span>
+          </div>
+          <p className="integration-lead">
+            沪上校历提供无需登录的结构化数据源与 Quote/0 Canvas 原生布局。接口按上海时间自动计算，带官方校历来源、缓存策略和版本字段，可直接用于 Content Studio 接入评审。
+          </p>
+
+          <div className="endpoint-grid">
+            <a href="/api/calendar" target="_blank" rel="noreferrer">
+              <span>01 · REST DATA</span>
+              <strong>校历数据 API</strong>
+              <code>GET /api/calendar</code>
+              <small>当前阶段、倒计时、教学周、进度与下一节点</small>
+            </a>
+            <a href="/api/quote0/canvas" target="_blank" rel="noreferrer">
+              <span>02 · CANVAS</span>
+              <strong>Quote/0 布局</strong>
+              <code>GET /api/quote0/canvas</code>
+              <small>原生 windowData、展示数据与点击落地页</small>
+            </a>
+            <a
+              href="https://dot.mindreset.tech/docs/service/studio/join-content-studio"
+              target="_blank"
+              rel="noreferrer"
+            >
+              <span>03 · REVIEW</span>
+              <strong>Content Studio</strong>
+              <code>材料包已准备</code>
+              <small>图标、内容说明、接口示例与设备适配信息</small>
+            </a>
+          </div>
+
+          <div className="integration-footer">
+            <span><i aria-hidden="true" /> API 在线 · 无需认证 · 6 小时缓存</span>
+            <span>适配 Quote/0 · 296 × 152</span>
           </div>
         </section>
 
