@@ -1,6 +1,6 @@
 # 沪上校历 · Quote/0
 
-为 Quote/0 生成原生 **296 × 152** 黑白墨水屏画面，自动显示上海中小学当前学期或寒暑假进度，并通过官方 Image API 推送到设备。
+为 Quote/0 生成上海中小学校历，自动显示当前学期或寒暑假进度。CLI 同时支持官方 **Image API** 与 **Canvas API**：前者推送 296 × 152 黑白 PNG，后者推送可由设备渲染的结构化布局。
 
 校历数据依据上海市教育委员会《上海市中小学 2025 学年校历》和《上海市中小学 2026 学年校历》。个别学校安排及节假日调整以学校通知为准。
 
@@ -31,7 +31,7 @@ quote0-school init --device-id ABCD1234ABCD
 
 API Key 始终建议使用环境变量，不会由本项目写入配置文件。
 
-在 Dot. App 的 Content Studio 中，需要先把 **Image API** 内容加入设备的固定内容或循环内容；否则官方接口会返回 404。
+在 Dot. App 的 Content Studio 中，需要先把对应的 **Image API** 或 **Canvas API** 内容加入设备的固定内容或循环内容；否则官方接口会返回 404。
 
 ## 使用
 
@@ -45,14 +45,20 @@ quote0-school render --output preview.png
 # 用指定日期验证版式
 quote0-school render --date 2026-09-08 --output preview.png
 
-# 查看设备、状态与内容任务
+# 查看设备、状态与内容任务；也可以只看 Canvas API 内容
 quote0-school devices
 quote0-school status
 quote0-school tasks
+quote0-school tasks --type canvas
 
 # 先查看将要发送的请求摘要，再实际推送
 quote0-school push --dry-run
 quote0-school push
+
+# 预览 Canvas 布局、检查完整结构化请求，再通过 Canvas API 推送
+quote0-school canvas-preview --output canvas-preview.png
+quote0-school push-canvas --dry-run --preview canvas-preview.png
+quote0-school push-canvas
 ```
 
 当设备存在多个 Image API 内容时，使用 `tasks` 返回的 `key`：
@@ -87,7 +93,7 @@ quote0-school --json request get /api/authV2/open/devices
 
 ## 定时更新
 
-若要每天自动刷新，可用 macOS `launchd`、Linux cron 或其他调度器定时运行 `quote0-school push`。设备休眠时，内容会先保存到服务端，并在设备下一次唤醒时显示。
+若要每天自动刷新，可用 macOS `launchd`、Linux cron 或其他调度器定时运行 `quote0-school push`（Image API）或 `quote0-school push-canvas`（Canvas API）。设备休眠时，内容会先保存到服务端，并在设备下一次唤醒时显示。
 
 ## Content Studio 官方插件候选
 
@@ -98,7 +104,7 @@ quote0-school --json request get /api/authV2/open/devices
 - 100 × 100 透明卡片图标：<https://quote0-school-calendar.chuxubank.chatgpt.site/content-studio-icon.png>
 - 申报资料：[`content-studio/CONTENT_STUDIO_SUBMISSION.md`](content-studio/CONTENT_STUDIO_SUBMISSION.md)
 
-接口支持 `?date=YYYY-MM-DD`，便于审核方复现任意日期的状态。站点与接口均已公开访问，接口本身没有额外鉴权。当前状态为“待官方审核”；在 Quote/0 官方确认上架前，仍可继续使用本仓库的 Image API 推送方式。
+接口支持 `?date=YYYY-MM-DD`，便于审核方复现任意日期的状态。站点与接口均已公开访问，接口本身没有额外鉴权。当前状态为“待官方审核”；在 Quote/0 官方确认上架前，仍可使用 CLI 的 Image API 或 Canvas API 推送方式。
 
 ## 官方资料
 

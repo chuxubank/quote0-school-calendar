@@ -7,12 +7,12 @@ from PIL import Image, ImageDraw, ImageFont
 
 from .calendar_data import CalendarStatus, status_for
 
-
 WIDTH = 296
 HEIGHT = 152
 
 FONT_CANDIDATES = (
     "/System/Library/Fonts/PingFang.ttc",
+    "/System/Library/Fonts/STHeiti Light.ttc",
     "/System/Library/Fonts/STHeiti Medium.ttc",
     "/System/Library/Fonts/Supplemental/Arial Unicode.ttf",
     "/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc",
@@ -67,7 +67,9 @@ def _draw_progress(draw: ImageDraw.ImageDraw, status: CalendarStatus) -> None:
     x0, x1, y = 188, 283, 108
     draw.rounded_rectangle((x0, y, x1, y + 8), radius=4, outline=0, width=1)
     inner_width = max(2, round((x1 - x0 - 4) * status.progress_percent / 100))
-    draw.rounded_rectangle((x0 + 2, y + 2, x0 + 2 + inner_width, y + 6), radius=2, fill=0)
+    draw.rounded_rectangle(
+        (x0 + 2, y + 2, x0 + 2 + inner_width, y + 6), radius=2, fill=0
+    )
 
 
 def render_calendar(day: date, output: Path) -> dict[str, object]:
@@ -91,13 +93,17 @@ def render_calendar(day: date, output: Path) -> dict[str, object]:
     text(draw, (12, 38), status.primary_label, label)
     primary = "--" if status.primary_value is None else str(status.primary_value)
     text(draw, (8, 102), primary, value_font, anchor="ls")
-    value_box = draw.textbbox((8, 102), primary, font=value_font, anchor="ls", stroke_width=1)
+    value_box = draw.textbbox(
+        (8, 102), primary, font=value_font, anchor="ls", stroke_width=1
+    )
     unit_x = min(154, value_box[2] + 7)
     text(draw, (unit_x, 98), "天", unit, anchor="ls")
 
     draw.line((175, 37, 175, 136), fill=0, width=1)
 
-    secondary_value = "" if status.secondary_value is None else str(status.secondary_value)
+    secondary_value = (
+        "" if status.secondary_value is None else str(status.secondary_value)
+    )
     text(draw, (188, 43), status.secondary_label, tiny)
     text(draw, (188, 66), f"{secondary_value} 天".strip(), secondary)
 
@@ -113,7 +119,9 @@ def render_calendar(day: date, output: Path) -> dict[str, object]:
         )
     else:
         detail = "等待进入已收录校历"
-        end_label = _format_day(status.next_period.start) if status.next_period else "待更新"
+        end_label = (
+            _format_day(status.next_period.start) if status.next_period else "待更新"
+        )
 
     text(draw, (188, 82), detail, tiny)
     _draw_progress(draw, status)

@@ -14,7 +14,7 @@
 
 - `app/`：公开落地页与 API 路由；
 - `lib/school-calendar.ts`：共享的上海校历计算逻辑；
-- `quote0-school-cli/`：生成 296 × 152 黑白 PNG，并通过 Quote/0 Image API 推送到设备的 Python CLI；
+- `quote0-school-cli/`：支持 Quote/0 Image API 与 Canvas API 的 Python CLI，可生成 296 × 152 预览、发现内容任务并推送设备；
 - `content-studio/`：Quote/0 Content Studio 申报材料、100 × 100 图标和响应示例；
 - `worker/api.ts`：无状态的独立 Worker API 入口；
 - `.github/workflows/`：Pages、Worker 与 GHCR 自动发布；
@@ -118,9 +118,13 @@ quote0-school doctor
 quote0-school render --output preview.png
 quote0-school push --dry-run
 quote0-school push
+quote0-school canvas-preview --output canvas-preview.png
+quote0-school tasks --type canvas
+quote0-school push-canvas --dry-run --preview canvas-preview.png
+quote0-school push-canvas
 ```
 
-推送前在 Dot. App 的 Content Studio 中添加 **Image API** 内容，并配置：
+推送前在 Dot. App 的 Content Studio 中添加对应的 **Image API** 或 **Canvas API** 内容，并配置：
 
 ```bash
 export DOT_API_KEY='dot_app_...'

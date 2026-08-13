@@ -7,7 +7,6 @@ from typing import Any
 from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
 
-
 DEFAULT_BASE_URL = "https://dot.mindreset.tech"
 
 
@@ -35,7 +34,7 @@ def request_json(
             "Authorization": f"Bearer {api_key}",
             "Content-Type": "application/json",
             "Accept": "application/json",
-            "User-Agent": "quote0-school-calendar/0.1",
+            "User-Agent": "quote0-school-calendar/0.2",
         },
     )
     try:
@@ -48,19 +47,25 @@ def request_json(
             detail = json.loads(raw).get("message", raw)
         except json.JSONDecodeError:
             detail = raw or error.reason
-        raise ApiError(f"Quote/0 API {error.code}: {detail}", status=error.code) from error
+        raise ApiError(
+            f"Quote/0 API {error.code}: {detail}", status=error.code
+        ) from error
     except URLError as error:
         raise ApiError(f"无法连接 Quote/0 API: {error.reason}") from error
 
 
-def list_devices(api_key: str, *, base_url: str = DEFAULT_BASE_URL) -> list[dict[str, Any]]:
+def list_devices(
+    api_key: str, *, base_url: str = DEFAULT_BASE_URL
+) -> list[dict[str, Any]]:
     result = request_json("GET", "/api/authV2/open/devices", api_key, base_url=base_url)
     if not isinstance(result, list):
         raise ApiError("设备列表响应格式无效")
     return result
 
 
-def device_status(api_key: str, device_id: str, *, base_url: str = DEFAULT_BASE_URL) -> dict[str, Any]:
+def device_status(
+    api_key: str, device_id: str, *, base_url: str = DEFAULT_BASE_URL
+) -> dict[str, Any]:
     result = request_json(
         "GET",
         f"/api/authV2/open/device/{device_id}/status",
@@ -72,7 +77,9 @@ def device_status(api_key: str, device_id: str, *, base_url: str = DEFAULT_BASE_
     return result
 
 
-def list_tasks(api_key: str, device_id: str, *, base_url: str = DEFAULT_BASE_URL) -> list[dict[str, Any]]:
+def list_tasks(
+    api_key: str, device_id: str, *, base_url: str = DEFAULT_BASE_URL
+) -> list[dict[str, Any]]:
     result = request_json(
         "GET",
         f"/api/authV2/open/device/{device_id}/loop/list",
@@ -121,4 +128,23 @@ def push_image(
     )
     if not isinstance(result, dict):
         raise ApiError("推送响应格式无效")
+    return result
+
+
+def push_canvas(
+    api_key: str,
+    device_id: str,
+    payload: dict[str, Any],
+    *,
+    base_url: str = DEFAULT_BASE_URL,
+) -> dict[str, Any]:
+    result = request_json(
+        "POST",
+        f"/api/authV2/open/device/{device_id}/canvas",
+        api_key,
+        base_url=base_url,
+        body=payload,
+    )
+    if not isinstance(result, dict):
+        raise ApiError("Canvas 推送响应格式无效")
     return result
